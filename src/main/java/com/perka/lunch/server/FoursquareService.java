@@ -1,49 +1,43 @@
 package com.perka.lunch.server;
 
 import retrofit.http.GET;
-import retrofit.http.Path;
 import retrofit.http.Query;
 
 import java.util.List;
 
 public interface FoursquareService {
-    @GET("/v2/venues/search?intent=browse&radius=800&categoryId=4d4b7105d754a06374d81259")
-    FoursquareResponseSearch search(@Query("ll") String latxLong);
-
-    @GET("/v2/venues/{venueId}/photos")
-    FoursquareResponsePhotos photos(@Path("venueId") String venueId);
-
-    class FoursquareResponsePhotos {
-        FoursquareResponsePhotosResponse response;
-    }
-
-    class FoursquareResponsePhotosResponse {
-        FoursquareResponsePhotosResponsePhotos photos;
-    }
-
-    class FoursquareResponsePhotosResponsePhotos {
-        List<FoursquareResponsePhotosItem> items;
-    }
-
-    class FoursquareResponsePhotosItem {
-        String prefix;
-        String suffix;
-        int width;
-        int height;
-    }
+    @GET("/v2/venues/explore?limit=50&radius=800&section=food&venuePhotos=1&openNow=1")
+    FoursquareResponseRoot<FoursquareResponseSearch> search(@Query("ll") String latxLong);
 
     class FoursquareResponseSearch {
-        FoursquareResponseSearchResponse response = new FoursquareResponseSearchResponse();
+        List<FoursquareResponseGroup> groups;
     }
-    class FoursquareResponseSearchResponse {
-        List<FoursquareResponseVenue> venues;
+
+    class FoursquareResponseGroup {
+        List<FoursquareResponseItem> items;
     }
-    class FoursquareResponseVenue {
+
+    class FoursquareResponseItem {
+        FoursquareResponseSearchVenue venue;
+    }
+
+    class FoursquareResponseSearchVenue {
         String id;
         String name;
-        FoursquareResponseLocation location;
+        FoursquareResponseSearchLocation location;
+        FoursquareResponseSearchHours hours;
+        FoursquareResponseSearchFeaturedPhotos featuredPhotos;
+
+        public FoursquareResponseSearchVenue() {
+        }
+
+        public FoursquareResponseSearchVenue(FoursquareResponseSearchVenue copy) {
+            this.id = copy.id;
+            this.name = copy.name;
+            this.location = copy.location;
+        }
     }
-    class FoursquareResponseLocation {
+    class FoursquareResponseSearchLocation {
         String address;
         String crossStreet;
         String lat;
@@ -54,5 +48,20 @@ public interface FoursquareService {
         String city;
         String state;
         String country;
+    }
+
+    class FoursquareResponseSearchHours {
+        boolean isOpen;
+    }
+
+    class FoursquareResponseSearchFeaturedPhotos {
+        List<FoursquareResponseSearchFeaturedPhotosItem> items;
+    }
+
+    class FoursquareResponseSearchFeaturedPhotosItem {
+        String prefix;
+        String suffix;
+        int width;
+        int height;
     }
 }

@@ -1,63 +1,81 @@
 package com.perka.lunch.server;
 
+import com.perka.lunch.server.FoursquareService.*;
 import org.jetbrains.annotations.NotNull;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 
 import java.util.ArrayList;
 import java.util.List;
-import com.perka.lunch.server.FoursquareService.*;
 
 public class FoursquareConnector {
     private final FoursquareService foursquareService;
 
     public FoursquareConnector(final String token) {
-        final RequestInterceptor addTokenInterceptor = (RequestInterceptor.RequestFacade request) -> {
+        this(request -> {
             request.addQueryParam("oauth_token", token);
             request.addQueryParam("m", "foursquare");
             request.addQueryParam("v", "20150825");
-        };
+        });
+    }
+
+    public FoursquareConnector(final String clientId, final String clientSecret) {
+        this(request -> {
+            request.addQueryParam("client_id", clientId);
+            request.addQueryParam("client_secret", clientSecret);
+            request.addQueryParam("m", "foursquare");
+            request.addQueryParam("v", "20150825");
+        });
+    }
+
+    private FoursquareConnector(RequestInterceptor interceptor) {
         final RestAdapter restAdapter = new RestAdapter.Builder()
                 .setEndpoint("https://api.foursquare.com")
-                .setRequestInterceptor(addTokenInterceptor)
+                .setRequestInterceptor(interceptor)
                 .build();
         this.foursquareService = restAdapter.create(FoursquareService.class);
     }
 
-    public FoursquareOutgoing search(@NotNull String lat, @NotNull String lon, int width, int height) {
-        final FoursquareOutgoing returnValue = new FoursquareOutgoing();
+    public FoursquareOutgoingResponse search(@NotNull String lat, @NotNull String lon, int width, int height) {
+        final FoursquareResponseSearch searchResponse = foursquareService.search(String.format("%s,%s", lat, lon)).response;
+        final FoursquareOutgoingResponse out = new FoursquareOutgoingResponse();
 
-        final FoursquareResponseSearch searchResponse = foursquareService.search(String.format("%s,%s", lat, lon));
-        final List<FoursquareResponseVenue> venues = searchResponse.response.venues;
-
-        for (FoursquareResponseVenue venue : venues) {
-            final FoursquareResponsePhotos photos = foursquareService.photos(venue.id);
-            final FoursquareResponsePhotosItem featuredPhoto = photos.response.photos.items.get(0);
-            final FoursquareOutgoingVenue outgoingVenue = new FoursquareOutgoingVenue();
-            outgoingVenue.id = venue.id;
-            outgoingVenue.location = venue.location;
-            outgoingVenue.name = venue.name;
-            outgoingVenue.pictureUrlRaw = getPictureUrl(featuredPhoto, featuredPhoto.width, featuredPhoto.height);
-            if (width > 0 && height > 0) {
-                outgoingVenue.pictureUrlCropped = getPictureUrl(featuredPhoto, width, height);
-            } else {
-                outgoingVenue.pictureUrlCropped = outgoingVenue.pictureUrlRaw;
+        for (FoursquareResponseGroup group : searchResponse.groups) {
+            for (FoursquareResponseItem item : group.items) {
+                final FoursquareOutgoingVenue outVenue = new FoursquareOutgoingVenue(item.venue, width, height);
+                out.venues.add(outVenue);
             }
-            returnValue.venues.add(outgoingVenue);
         }
-        return returnValue;
+
+        return out;
     }
 
-    private static String getPictureUrl(FoursquareResponsePhotosItem photo, int width, int height) {
+    private static String urlFromVenuePhoto(FoursquareResponseSearchFeaturedPhotosItem photo, int width, int height) {
         return String.format("%s%dx%d%s", photo.prefix, width, height, photo.suffix);
     }
 
-    public static class FoursquareOutgoing {
+    public static class FoursquareOutgoingResponse {
         final List<FoursquareOutgoingVenue> venues = new ArrayList<>();
     }
 
-    public static class FoursquareOutgoingVenue extends FoursquareResponseVenue {
-        String pictureUrlRaw;
-        String pictureUrlCropped;
+    public static class FoursquareOutgoingVenue {
+        final String id;
+        final String name;
+        final FoursquareResponseSearchLocation location;
+        final String pictureUrlRaw;
+        final String pictureUrlCropped;
+
+        public FoursquareOutgoingVenue(FoursquareResponseSearchVenue venue, int croppedWidth, int croppedHeight) {
+            id = venue.id;
+            name = venue.name;
+            location = venue.location;
+            final FoursquareResponseSearchFeaturedPhotosItem photo = venue.featuredPhotos.items.get(0);
+            pictureUrlRaw = urlFromVenuePhoto(photo, photo.width, photo.height);
+            if (croppedWidth > 0 && croppedHeight > 0) {
+                pictureUrlCropped = urlFromVenuePhoto(photo, croppedWidth, croppedHeight);
+            } else {
+                pictureUrlCropped = null;
+            }
+        }
     }
 }

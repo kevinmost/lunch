@@ -10,8 +10,10 @@ public class LunchServer {
     private static final Gson GSON = new Gson();
 
     private static final String TOKEN = System.getenv("TOKEN_FOURSQUARE");
+    private static final String CLIENT_ID = System.getenv("CLIENT_ID");
+    private static final String CLIENT_SECRET = System.getenv("CLIENT_SECRET");
 
-    private static final FoursquareConnector FOURSQUARE_CONNECTOR = new FoursquareConnector(TOKEN);
+    private static final FoursquareConnector FOURSQUARE_CONNECTOR = new FoursquareConnector(CLIENT_ID, CLIENT_SECRET);
 
     public static void main(String[] args) {
         setSparkListenPort();
