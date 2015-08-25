@@ -52,7 +52,13 @@ public class FoursquareConnector {
     }
 
     private static boolean shouldVenueBeIncluded(FoursquareResponseSearchVenue venue, @SuppressWarnings("UnusedParameters") FoursquareSearchQueryParams filters) {
-        return venue.hours.isOpen;
+        final boolean satisfiesPriceFilter;
+        if (venue.price == null) {
+            satisfiesPriceFilter = true;
+        } else {
+            satisfiesPriceFilter = filters.minTier <= venue.price.tier && venue.price.tier <= filters.maxTier;
+        }
+        return venue.hours.isOpen && satisfiesPriceFilter;
     }
 
     private static String urlFromFoursquareImage(FoursquareResponseHasImage image, int width, int height) {
