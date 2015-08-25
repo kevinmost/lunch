@@ -9,9 +9,9 @@ The server for Lunch, a Tinder-like app to find food in your area.
     - Query params:
         - `latitude`: String. Defaults to "40.7529081"
         - `longitude`: String. Defaults to "-73.9739277"
-        - `width`: Integer. Optional param that can be used to obtain a `pictureUrlCropped`.
-        - `height`: Integer. Optional param that can be used to obtain a `pictureUrlCropped`.
+        - `width` and `height`: Integer. Optional params that can be used to obtain a `pictureUrlCropped`. Both must be specified, or this field will be left null.
+        - `minTier` and `maxTier`: Integer. Optional params that can set a minimum or maximum price tier (from 1 to 4 dollar signs). User can specify both, one, or neither.
 
     - Return:
         - JSON containing a single array, `venues`, with all of the individual venues.
-        - See [sample-search.json](samples/sample-search.json) for an example made with the API call `/search?width=600&height=800`.
+        - See [sample-search.json](samples/sample-search.json) for the API call: `/search?width=600&height=800`.

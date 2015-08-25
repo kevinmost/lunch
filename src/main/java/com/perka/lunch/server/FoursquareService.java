@@ -27,16 +27,10 @@ public interface FoursquareService {
         FoursquareResponseSearchLocation location;
         FoursquareResponseSearchHours hours;
         FoursquareResponseSearchFeaturedPhotos featuredPhotos;
-
-        public FoursquareResponseSearchVenue() {
-        }
-
-        public FoursquareResponseSearchVenue(FoursquareResponseSearchVenue copy) {
-            this.id = copy.id;
-            this.name = copy.name;
-            this.location = copy.location;
-        }
+        List<FoursquareResponseSearchCategory> categories;
+        FoursquareResponseSearchPrice price;
     }
+
     class FoursquareResponseSearchLocation {
         String address;
         String crossStreet;
@@ -54,14 +48,28 @@ public interface FoursquareService {
         boolean isOpen;
     }
 
+    class FoursquareResponseSearchPrice {
+        int tier;
+    }
+
+    class FoursquareResponseSearchCategory {
+        String name;
+        FoursquareResponseSearchCategoryIcon icon;
+    }
+
+    class FoursquareResponseSearchCategoryIcon extends FoursquareResponseHasImage {}
+
     class FoursquareResponseSearchFeaturedPhotos {
         List<FoursquareResponseSearchFeaturedPhotosItem> items;
     }
 
-    class FoursquareResponseSearchFeaturedPhotosItem {
-        String prefix;
-        String suffix;
+    class FoursquareResponseSearchFeaturedPhotosItem extends FoursquareResponseHasImage {
         int width;
         int height;
+    }
+
+    abstract class FoursquareResponseHasImage {
+        String prefix;
+        String suffix;
     }
 }

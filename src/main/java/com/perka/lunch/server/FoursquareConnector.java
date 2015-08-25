@@ -36,22 +36,30 @@ public class FoursquareConnector {
         this.foursquareService = restAdapter.create(FoursquareService.class);
     }
 
-    public FoursquareOutgoingResponse search(@NotNull String lat, @NotNull String lon, int width, int height) {
-        final FoursquareResponseSearch searchResponse = foursquareService.search(String.format("%s,%s", lat, lon)).response;
+    public FoursquareOutgoingResponse search(FoursquareSearchQueryParams params) {
+        final FoursquareResponseSearch searchResponse = foursquareService.search(String.format("%s,%s", params.latitude, params.longitude)).response;
         final FoursquareOutgoingResponse out = new FoursquareOutgoingResponse();
 
         for (FoursquareResponseGroup group : searchResponse.groups) {
             for (FoursquareResponseItem item : group.items) {
-                final FoursquareOutgoingVenue outVenue = new FoursquareOutgoingVenue(item.venue, width, height);
-                out.venues.add(outVenue);
+                if (shouldVenueBeIncluded(item.venue, params)) {
+                    final FoursquareOutgoingVenue outVenue = new FoursquareOutgoingVenue(item.venue, params.croppedWidth, params.croppedHeight);
+                    out.venues.add(outVenue);
+                }
             }
         }
 
         return out;
     }
 
-    private static String urlFromVenuePhoto(FoursquareResponseSearchFeaturedPhotosItem photo, int width, int height) {
-        return String.format("%s%dx%d%s", photo.prefix, width, height, photo.suffix);
+    private static boolean shouldVenueBeIncluded(FoursquareResponseSearchVenue venue, FoursquareSearchQueryParams filters) {
+        return venue.hours.isOpen &&
+                venue.price.tier >= filters.minTier && venue.price.tier <= filters.maxTier
+                ;
+    }
+
+    private static String urlFromFoursquareImage(FoursquareResponseHasImage image, int width, int height) {
+        return String.format("%s%dx%d%s", image.prefix, width, height, image.suffix);
     }
 
     public static class FoursquareOutgoingResponse {
@@ -64,18 +72,30 @@ public class FoursquareConnector {
         final FoursquareResponseSearchLocation location;
         final String pictureUrlRaw;
         final String pictureUrlCropped;
+        final String categoryName;
+        final String categoryIconUrl;
+        final int price;
 
         public FoursquareOutgoingVenue(FoursquareResponseSearchVenue venue, int croppedWidth, int croppedHeight) {
             id = venue.id;
             name = venue.name;
             location = venue.location;
             final FoursquareResponseSearchFeaturedPhotosItem photo = venue.featuredPhotos.items.get(0);
-            pictureUrlRaw = urlFromVenuePhoto(photo, photo.width, photo.height);
+            pictureUrlRaw = urlFromFoursquareImage(photo, photo.width, photo.height);
             if (croppedWidth > 0 && croppedHeight > 0) {
-                pictureUrlCropped = urlFromVenuePhoto(photo, croppedWidth, croppedHeight);
+                pictureUrlCropped = urlFromFoursquareImage(photo, croppedWidth, croppedHeight);
             } else {
                 pictureUrlCropped = null;
             }
+            if (venue.categories.isEmpty()) {
+                categoryName = null;
+                categoryIconUrl = null;
+            } else {
+                final FoursquareResponseSearchCategory category = venue.categories.get(0);
+                categoryName = category.name;
+                categoryIconUrl = urlFromFoursquareImage(category.icon, 88, 88);
+            }
+            price = venue.price.tier;
         }
     }
 }

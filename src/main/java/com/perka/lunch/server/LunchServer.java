@@ -27,17 +27,7 @@ public class LunchServer {
 
     private static void initRouteSearch() {
         Spark.get("/search", (Request request, Response response) -> {
-            final String latitude = request.queryParams("latitude");
-            final String longitude = request.queryParams("longitude");
-            final String width = request.queryParams("width");
-            final String height = request.queryParams("height");
-
-            return FOURSQUARE_CONNECTOR.search(
-                    latitude == null ? "40.7529081" : latitude,
-                    longitude == null ? "-73.9739277" : longitude,
-                    Strings.isNullOrEmpty(width) ? -1 : Integer.parseInt(width),
-                    Strings.isNullOrEmpty(height) ? -1 : Integer.parseInt(height)
-            );
+            return FOURSQUARE_CONNECTOR.search(new FoursquareSearchQueryParams(request.queryMap()));
         }, GSON::toJson);
     }
 }
