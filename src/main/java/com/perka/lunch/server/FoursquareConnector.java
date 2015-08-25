@@ -53,6 +53,7 @@ public class FoursquareConnector {
 
     private static boolean shouldVenueBeIncluded(FoursquareResponseSearchVenue venue, @SuppressWarnings("UnusedParameters") FoursquareSearchQueryParams filters) {
         final boolean satisfiesPriceFilter;
+        //noinspection SimplifiableIfStatement
         if (venue.price == null) {
             satisfiesPriceFilter = true;
         } else {
@@ -61,8 +62,11 @@ public class FoursquareConnector {
         return venue.hours.isOpen && satisfiesPriceFilter;
     }
 
-    private static String urlFromFoursquareImage(FoursquareResponseHasImage image, int width, int height) {
+    private static String urlFromFoursquarePhoto(FoursquareResponseSearchFeaturedPhotosItem image, int width, int height) {
         return String.format("%s%dx%d%s", image.prefix, width, height, image.suffix);
+    }
+    private static String urlFromFoursquarePhoto(FoursquareResponseSearchCategoryIcon icon, int dimensions) {
+        return String.format("%s%d%s", icon.prefix, dimensions, icon.suffix);
     }
 
     private static void addVersionAndModeToRequest(RequestInterceptor.RequestFacade request) {
@@ -89,9 +93,9 @@ public class FoursquareConnector {
             name = venue.name;
             location = venue.location;
             final FoursquareResponseSearchFeaturedPhotosItem photo = venue.featuredPhotos.items.get(0);
-            pictureUrlRaw = urlFromFoursquareImage(photo, photo.width, photo.height);
+            pictureUrlRaw = urlFromFoursquarePhoto(photo, photo.width, photo.height);
             if (croppedWidth > 0 && croppedHeight > 0) {
-                pictureUrlCropped = urlFromFoursquareImage(photo, croppedWidth, croppedHeight);
+                pictureUrlCropped = urlFromFoursquarePhoto(photo, croppedWidth, croppedHeight);
             } else {
                 pictureUrlCropped = null;
             }
@@ -103,7 +107,7 @@ public class FoursquareConnector {
                 final FoursquareResponseSearchCategory category = venue.categories.get(0);
                 categoryId = category.id;
                 categoryName = category.name;
-                categoryIconUrl = urlFromFoursquareImage(category.icon, 88, 88);
+                categoryIconUrl = urlFromFoursquarePhoto(category.icon, 88);
             }
             if (venue.price == null) {
                 price = null;
