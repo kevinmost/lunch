@@ -10,6 +10,7 @@ import java.util.List;
 public class FoursquareConnector {
     private final FoursquareService foursquareService;
 
+    @SuppressWarnings("unused")
     public FoursquareConnector(final String token) {
         this(request -> {
             addVersionAndModeToRequest(request);
@@ -34,7 +35,8 @@ public class FoursquareConnector {
     }
 
     public FoursquareOutgoingResponse search(FoursquareSearchQueryParams params) {
-        final FoursquareResponseSearch searchResponse = foursquareService.search(String.format("%s,%s", params.latitude, params.longitude)).response;
+        final String latxLong = String.format("%s,%s", params.latitude, params.longitude);
+        final FoursquareResponseSearch searchResponse = foursquareService.search(latxLong).response;
         final FoursquareOutgoingResponse out = new FoursquareOutgoingResponse();
 
         for (FoursquareResponseGroup group : searchResponse.groups) {
@@ -49,10 +51,8 @@ public class FoursquareConnector {
         return out;
     }
 
-    private static boolean shouldVenueBeIncluded(FoursquareResponseSearchVenue venue, FoursquareSearchQueryParams filters) {
-        return venue.hours.isOpen &&
-                venue.price.tier >= filters.minTier && venue.price.tier <= filters.maxTier
-                ;
+    private static boolean shouldVenueBeIncluded(FoursquareResponseSearchVenue venue, @SuppressWarnings("UnusedParameters") FoursquareSearchQueryParams filters) {
+        return venue.hours.isOpen;
     }
 
     private static String urlFromFoursquareImage(FoursquareResponseHasImage image, int width, int height) {
@@ -99,7 +99,11 @@ public class FoursquareConnector {
                 categoryName = category.name;
                 categoryIconUrl = urlFromFoursquareImage(category.icon, 88, 88);
             }
-            price = venue.price.message;
+            if (venue.price == null) {
+                price = null;
+            } else {
+                price = venue.price.message;
+            }
             openUntil = venue.hours.status;
         }
     }

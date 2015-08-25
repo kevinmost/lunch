@@ -1,5 +1,6 @@
 package com.perka.lunch.server;
 
+import org.jetbrains.annotations.Nullable;
 import retrofit.http.GET;
 import retrofit.http.Query;
 
@@ -28,7 +29,7 @@ public interface FoursquareService {
         FoursquareResponseSearchHours hours;
         FoursquareResponseSearchFeaturedPhotos featuredPhotos;
         List<FoursquareResponseSearchCategory> categories;
-        FoursquareResponseSearchPrice price;
+        @Nullable FoursquareResponseSearchPrice price;
     }
 
     class FoursquareResponseSearchLocation {
