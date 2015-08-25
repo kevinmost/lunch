@@ -53,6 +53,7 @@ public interface FoursquareService {
     }
 
     class FoursquareResponseSearchCategory {
+        String id;
         String name;
         FoursquareResponseSearchCategoryIcon icon;
     }

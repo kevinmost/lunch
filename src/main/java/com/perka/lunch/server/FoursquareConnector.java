@@ -72,6 +72,7 @@ public class FoursquareConnector {
         final FoursquareResponseSearchLocation location;
         final String pictureUrlRaw;
         final String pictureUrlCropped;
+        final String categoryId;
         final String categoryName;
         final String categoryIconUrl;
         final int price;
@@ -88,10 +89,12 @@ public class FoursquareConnector {
                 pictureUrlCropped = null;
             }
             if (venue.categories.isEmpty()) {
+                categoryId = null;
                 categoryName = null;
                 categoryIconUrl = null;
             } else {
                 final FoursquareResponseSearchCategory category = venue.categories.get(0);
+                categoryId = category.id;
                 categoryName = category.name;
                 categoryIconUrl = urlFromFoursquareImage(category.icon, 88, 88);
             }
