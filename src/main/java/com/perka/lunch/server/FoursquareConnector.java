@@ -75,7 +75,7 @@ public class FoursquareConnector {
         final String categoryId;
         final String categoryName;
         final String categoryIconUrl;
-        final int price;
+        final String price;
 
         public FoursquareOutgoingVenue(FoursquareResponseSearchVenue venue, int croppedWidth, int croppedHeight) {
             id = venue.id;
@@ -98,7 +98,7 @@ public class FoursquareConnector {
                 categoryName = category.name;
                 categoryIconUrl = urlFromFoursquareImage(category.icon, 88, 88);
             }
-            price = venue.price.tier;
+            price = venue.price.message;
         }
     }
 }

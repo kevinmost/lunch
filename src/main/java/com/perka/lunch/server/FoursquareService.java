@@ -50,6 +50,7 @@ public interface FoursquareService {
 
     class FoursquareResponseSearchPrice {
         int tier;
+        String message;
     }
 
     class FoursquareResponseSearchCategory {
