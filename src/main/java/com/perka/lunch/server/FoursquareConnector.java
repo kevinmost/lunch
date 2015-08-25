@@ -1,7 +1,6 @@
 package com.perka.lunch.server;
 
 import com.perka.lunch.server.FoursquareService.*;
-import org.jetbrains.annotations.NotNull;
 import retrofit.RequestInterceptor;
 import retrofit.RestAdapter;
 
@@ -13,18 +12,16 @@ public class FoursquareConnector {
 
     public FoursquareConnector(final String token) {
         this(request -> {
+            addVersionAndModeToRequest(request);
             request.addQueryParam("oauth_token", token);
-            request.addQueryParam("m", "foursquare");
-            request.addQueryParam("v", "20150825");
         });
     }
 
     public FoursquareConnector(final String clientId, final String clientSecret) {
         this(request -> {
+            addVersionAndModeToRequest(request);
             request.addQueryParam("client_id", clientId);
             request.addQueryParam("client_secret", clientSecret);
-            request.addQueryParam("m", "foursquare");
-            request.addQueryParam("v", "20150825");
         });
     }
 
@@ -62,12 +59,16 @@ public class FoursquareConnector {
         return String.format("%s%dx%d%s", image.prefix, width, height, image.suffix);
     }
 
+    private static void addVersionAndModeToRequest(RequestInterceptor.RequestFacade request) {
+        request.addQueryParam("m", "foursquare");
+        request.addQueryParam("v", "20150825");
+    }
+
     public static class FoursquareOutgoingResponse {
         final List<FoursquareOutgoingVenue> venues = new ArrayList<>();
     }
 
     public static class FoursquareOutgoingVenue {
-        final String id;
         final String name;
         final FoursquareResponseSearchLocation location;
         final String pictureUrlRaw;
@@ -76,9 +77,9 @@ public class FoursquareConnector {
         final String categoryName;
         final String categoryIconUrl;
         final String price;
+        final String openUntil;
 
         public FoursquareOutgoingVenue(FoursquareResponseSearchVenue venue, int croppedWidth, int croppedHeight) {
-            id = venue.id;
             name = venue.name;
             location = venue.location;
             final FoursquareResponseSearchFeaturedPhotosItem photo = venue.featuredPhotos.items.get(0);
@@ -99,6 +100,7 @@ public class FoursquareConnector {
                 categoryIconUrl = urlFromFoursquareImage(category.icon, 88, 88);
             }
             price = venue.price.message;
+            openUntil = venue.hours.status;
         }
     }
 }

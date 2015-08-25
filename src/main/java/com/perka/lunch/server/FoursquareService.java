@@ -45,6 +45,7 @@ public interface FoursquareService {
     }
 
     class FoursquareResponseSearchHours {
+        String status;
         boolean isOpen;
     }
 
